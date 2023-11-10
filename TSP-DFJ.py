@@ -47,7 +47,7 @@ def dfj(cost_matrix):
 
     # Obtener la solución
     if pulp.LpStatus[problema.status] == "Optimal":
-        optimal_path = [i for i in range(n) if x[(i, j)].varValue == 1 for j in range(n) if i != j][0]
+        optimal_path = [(i, j) for i in range(n) for j in range(n) if i != j and x[(i, j)].varValue == 1]
         optimal_cost = pulp.value(problema.objective)
         return optimal_path, optimal_cost
     else:
