@@ -1,17 +1,22 @@
 import pulp
-import random
+import sys
+from utilidad import read_atsp
 
-# Matriz de distancias
-c = [
-    [0, 12, 29, 22, 13, 24],
-    [12, 0, 19, 3, 25, 6],
-    [29, 19, 0, 21, 23, 28],
-    [22, 3, 21, 0, 4, 5],
-    [13, 25, 23, 4, 0, 16],
-    [24, 26, 28, 5, 16, 0]
-]
+# Crear un problema de minimización
+problema = pulp.LpProblem("Problema_de_Rutas_Mínimas", pulp.LpMinimize)
 
-n = len(c)
+# Obtener el archivo como parametro en la terminal
+if len(sys.argv) < 2:
+    print("Por favor, ingresa el nombre del archivo .atsp")
+    sys.exit(1)
+
+path = sys.argv[1]
+graph = read_atsp(path)
+# Imprimir la matriz
+for line in graph:
+    print(line)
+
+n = len(graph)
 
 # Crear un problema de minimización
 problema = pulp.LpProblem("Problema_de_Rutas_Mínimas", pulp.LpMinimize)
@@ -30,7 +35,7 @@ d = pulp.LpVariable.dicts("d", A, 0, None, pulp.LpContinuous)
 u = pulp.LpVariable.dicts("u", V, 0, n - 1, pulp.LpInteger)
 
 # Función objetivo: Minimizar la distancia total
-problema += pulp.lpSum(c[i][j] * x[(i, j)] for (i, j) in A)
+problema += pulp.lpSum(graph[i][j] * x[(i, j)] for (i, j) in A)
 
 # Restricciones
 for i in V:
