@@ -1,19 +1,22 @@
 import pulp
+import sys
+from utilidad import read_atsp
 
 # Crear un problema de minimización
 problema = pulp.LpProblem("Problema_de_Rutas_Mínimas", pulp.LpMinimize)
 
-# Matriz de distancias c de 6x6 (asimétrica)
-c = [
-    [0, 12, 29, 22, 13, 24],
-    [12, 0, 19, 3, 25, 6],
-    [29, 19, 0, 21, 23, 28],
-    [22, 3, 21, 0, 4, 5],
-    [13, 25, 23, 4, 0, 16],
-    [24, 26, 28, 5, 16, 0]
-]
+# Obtener el archivo como parametro en la terminal
+if len(sys.argv) < 2:
+    print("Por favor, ingresa el nombre del archivo .atsp")
+    sys.exit(1)
 
-n = len(c)
+path = sys.argv[1]
+graph = read_atsp(path)
+# Imprimir la matriz
+for line in graph:
+    print(line)
+
+n = len(graph)
 
 # Conjuntos de nodos y aristas
 V = range(n)
@@ -26,7 +29,7 @@ x = pulp.LpVariable.dicts("x", A, 0, 1, pulp.LpBinary)
 g = pulp.LpVariable.dicts("u", V, 0, n - 1, pulp.LpInteger)
 
 # Función objetivo: Minimizar la distancia total
-problema += pulp.lpSum(c[i][j] * x[(i, j)] for (i, j) in A)
+problema += pulp.lpSum(graph[i][j] * x[(i, j)] for (i, j) in A)
 
 # Restricciones
 for i in V:
@@ -44,12 +47,6 @@ for i in V:
             if i != 0 and j != 0:
                 problema += g[i] - g[j] + (n - 1) * x[(i, j)] <= n - 2
 
-# Restricciones adicionales para garantizar un ciclo hamiltoniano
-for i in V:
-    problema += pulp.lpSum(x[(i, j)] for j in V if i != j) == 2
-
-for j in V:
-    problema += pulp.lpSum(x[(i, j)] for i in V if i != j) == 2
 
 # Resolver el problema
 problema.solve()
