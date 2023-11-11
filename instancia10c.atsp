@@ -1,0 +1,18 @@
+NAME:  prueba_ATSP_10_C
+TYPE: ATSP
+COMMENT: Instancia de prueba C para ATSP con 10 residencias
+DIMENSION: 10
+EDGE_WEIGHT_TYPE: EXPLICIT
+EDGE_WEIGHT_FORMAT: FULL_MATRIX
+EDGE_WEIGHT_SECTION
+ 9999    8   15   10    7    3    1    9    5    2
+    6 9999    3    9    5   11   12   14   18    8
+    2    7 9999   12   10   14   16   11   13   15
+    8   14   10 9999    7   15   18   20   13   17
+   16   13   19    9   14    9   11    8   10    6
+    3   16   12   18    8 9999    7   14   17   20
+   18    6    9   16   11   10 9999    4   13    7
+   14   17   20   12   18   17    3 9999   11    9
+   10   13   14   17   16    4   15   11   19   16
+    4    8   11   14   13   18   10    9   15 9999
+EOF
