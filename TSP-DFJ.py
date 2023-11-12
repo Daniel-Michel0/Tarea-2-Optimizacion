@@ -1,62 +1,49 @@
-import numpy as np
 import pulp
-import matplotlib.pyplot as plt
-from utilidad import read_atsp
 import sys
+import itertools
+from utilidad import read_atsp
 
-# Obtener el archivo como parametro en la terminal
+# Obtener el archivo como parámetro en la terminal
 if len(sys.argv) < 2:
     print("Por favor, ingresa el nombre del archivo .atsp")
     sys.exit(1)
 
 path = sys.argv[1]
 graph = read_atsp(path)
-# Imprimir la matriz
-for line in graph:
-    print(line)
 
+n = len(graph)
 
-def dfj(cost_matrix):
+def solve_dfj_problem(cost_matrix):
     n = len(cost_matrix)
 
     # Crear un problema de minimización
-    problema = pulp.LpProblem("Problema_ATSP", pulp.LpMinimize)
+    problema_dfj = pulp.LpProblem("Problema_DFJ", pulp.LpMinimize)
 
     # Crear variables binarias x_ij
-    x = pulp.LpVariable.dicts("x", ((i, j) for i in range(n) for j in range(n) if i != j), 0, 1, pulp.LpBinary)
-
-    # Crear variables u_i para eliminar subciclos
-    u = pulp.LpVariable.dicts("u", (i for i in range(n)), 0, n-1, pulp.LpInteger)
+    x = pulp.LpVariable.dicts("x", ((i, j) for i in range(n) for j in range(n)), 0, 1, pulp.LpBinary)
 
     # Función objetivo: Minimizar la distancia total
-    problema += pulp.lpSum(cost_matrix[i][j] * x[(i, j)] for i in range(n) for j in range(n) if i != j)
+    problema_dfj += pulp.lpSum(cost_matrix[i][j] * x[(i, j)] for i in range(n) for j in range(n))
 
-    # Restricciones de entrada y salida para cada nodo
+    # Restricciones
+    for j in range(n):
+        problema_dfj += pulp.lpSum(x[(i, j)] for i in range(n)) == 1  # Restricción (2)
+
     for i in range(n):
-        problema += pulp.lpSum(x[(i, j)] for j in range(n) if i != j) == 1
-        problema += pulp.lpSum(x[(j, i)] for j in range(n) if i != j) == 1
+        problema_dfj += pulp.lpSum(x[(i, j)] for j in range(n)) == 1  # Restricción (3)
 
-    # Eliminación de subciclos
-    for i in range(1, n):
-        for j in range(1, n):
-            if i != j:
-                problema += u[i] - u[j] + n * x[(i, j)] <= n - 1
+    for s in range(2, n):
+        for S in itertools.combinations(range(n), s):
+            problema_dfj += pulp.lpSum(x[(i, j)] for i in S for j in S) <= len(S) - 1  # Restricción (4)
 
     # Resolver el problema
-    problema.solve()
+    problema_dfj.solve()
 
-    # Obtener la solución
-    if pulp.LpStatus[problema.status] == "Optimal":
-        optimal_path = [(i, j) for i in range(n) for j in range(n) if i != j and x[(i, j)].varValue == 1]
-        optimal_cost = pulp.value(problema.objective)
-        return optimal_path, optimal_cost
-    else:
-        return None
+    # Imprimir la solución
+    print("Estado:", pulp.LpStatus[problema_dfj.status])
+    for (i, j) in x:
+        if(x[(i, j)].varValue == 1):
+            print(f"x({i},{j}) = {x[(i, j)].varValue}")
+    print("Valor óptimo =", pulp.value(problema_dfj.objective))
 
-result = dfj(graph)
-if result:
-    path, cost = result
-    print("Ciclo Hamiltoniano óptimo:", path)
-    print("Costo mínimo:", cost)
-else:
-    print("No se encontró una solución óptima.")
+solucion = solve_dfj_problem(graph)

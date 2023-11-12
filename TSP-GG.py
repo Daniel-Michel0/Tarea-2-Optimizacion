@@ -61,7 +61,6 @@ while True:
         print("Solución entera encontrada.")
         break
     else:
-        print("Añadiendo corte de GG.")
         # Identificar una solución no entera
         solucion_no_entera = [(i, j) for (i, j) in A if x[(i, j)].varValue % 1 != 0]
 
